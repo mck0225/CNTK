@@ -863,8 +863,9 @@ public:
         FrameRange fr(InputRef(0).GetMBLayout());
         InputRef(0).ValueFor(fr).VectorMax(*m_maxIndexes, *m_maxValues, true);
         // compute CTC score
+		printf("before doCTC Score: %.7f%%\n", Value().Get00Element());
         m_GammaCal.doCTC(Value(), *m_logSoftmaxOfRight, *m_maxIndexes, *m_maxValues, *m_CTCposterior, InputRef(0).GetMBLayout(), m_blankTokenId, m_delayConstraint);
-
+		printf("before doCTC Score: %.7f%%\n", Value().Get00Element());
 #if NANCHECK
         functionValues.HasNan("ForwardBackwardNode");
 #endif

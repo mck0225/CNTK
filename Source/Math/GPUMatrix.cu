@@ -4382,7 +4382,7 @@ GPUMatrix<ElemType>& GPUMatrix<ElemType>::AssignCTCScore(const GPUMatrix<ElemTyp
     GPUMatrix<ElemType>& beta,
     const GPUMatrix<ElemType> phoneSeq,
     const GPUMatrix<ElemType> phoneBoundary,
-    ElemType &totalScore,
+	GPUMatrix<ElemType> &totalScore,
     const std::vector<size_t>& uttToChanInd,
     const std::vector<size_t> & uttBeginFrame,
     const std::vector<size_t> & uttFrameNum,
@@ -4451,10 +4451,22 @@ GPUMatrix<ElemType>& GPUMatrix<ElemType>::AssignCTCScore(const GPUMatrix<ElemTyp
         vector<ElemType>scores(uttNum);
         CUDA_CALL(cudaMemcpyAsync(scores.data(), gpuScores, sizeof(ElemType) * uttNum, cudaMemcpyDeviceToHost, t_stream));
 
+		ElemType totalTemp = 0.0;
+
         for (size_t utt = 0; utt < uttFrameNum.size(); utt++)
         {
-            totalScore += scores[utt];
+			totalTemp -= scores[utt];
         }
+		printf("Total Score: %.7f%%\n", totalTemp);
+		printf("00 Element Score: %.7f%%\n", totalScore.Get00Element());
+		totalScore.Print("Matrix total score prior");
+		totalScore.SetColumn(&totalTemp, 0);
+		totalScore.Print("Matrix total score prior 2");
+		printf("00 Element Score 1: %.7f%%\n", totalScore.Get00Element());
+		totalScore.Print("Matrix total score after 1");
+		CUDA_CALL(cudaMemcpy(totalScore.Data(), &totalTemp, sizeof(ElemType), cudaMemcpyHostToDevice));
+		totalScore.Print("Matrix total score after 2");
+		printf("00 Element Score 2: %.7f%%\n", totalScore.Get00Element());
 
         CUDA_CALL(cudaFree(gpuFrameNum));
         CUDA_CALL(cudaFree(gpuPhoneNum));
